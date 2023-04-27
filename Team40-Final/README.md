@@ -1,7 +1,7 @@
 <h1>README</h1
     <h5>Directory Structure</h5>
 
-.
+```.
 ├── codes
 │   ├── Baseline
 │   │   ├── codeKNN_Naive.ipynb
@@ -23,7 +23,7 @@
 └── Results
     ├── senseval2.gold.key.txt
     └── senseval2_predictions.txt
-
+```
 <h5>Checkpoints of Model </h5>
 
 [1000 Checkpoint][https://drive.google.com/drive/folders/1-2FgXOB7RRynmdHkgenUxkTY5rImbECp?usp=sharing]
