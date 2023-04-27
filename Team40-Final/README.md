@@ -26,13 +26,13 @@
 ```
 <h5>Checkpoints of Model </h5>
 
-[1000 Checkpoint][https://drive.google.com/drive/folders/1-2FgXOB7RRynmdHkgenUxkTY5rImbECp?usp=sharing]
+(1000 Checkpoint)[https://drive.google.com/drive/folders/1-2FgXOB7RRynmdHkgenUxkTY5rImbECp?usp=sharing]
 
- [2000-Checkpoint][https://drive.google.com/drive/folders/101BHK7vlTERTvoO-4RRPJ-IFsqY7piuh?usp=sharing]
+ (2000-Checkpoint)[https://drive.google.com/drive/folders/101BHK7vlTERTvoO-4RRPJ-IFsqY7piuh?usp=sharing]
 
 <h5>Github </h5>
 
-[Github Repo][https://github.com/Abhi7410/Word-Sense-Disambiguation]
+(Github Repo)[https://github.com/Abhi7410/Word-Sense-Disambiguation]
 
 <h5>Instructions to Run</h5>
 
@@ -44,4 +44,4 @@ For BERT-model, prepared dataset is added already. If not present, then run `pyt
 
 Download this data folder from below link.
 
-[Dataset][https://iiitaphyd-my.sharepoint.com/:f:/g/personal/abhishek_shar_students_iiit_ac_in/EuY2tLElJ9RLmhpHkUs8zdMBE51Hetw8JfkMUR8UtL2vCg?e=5jyX9R]
+(Dataset)[https://iiitaphyd-my.sharepoint.com/:f:/g/personal/abhishek_shar_students_iiit_ac_in/EuY2tLElJ9RLmhpHkUs8zdMBE51Hetw8JfkMUR8UtL2vCg?e=5jyX9R]
