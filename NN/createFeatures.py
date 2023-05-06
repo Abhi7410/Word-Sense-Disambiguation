@@ -36,9 +36,7 @@ def collate_batch(batch):
     collated = []
     for sub_batch in batch:
         batch_size = len(sub_batch)
-        # 4 set of tensors (input_ids, input_mask, segment_ids, label_id)
-        sub_collated = [torch.zeros([batch_size, max_seq_length], dtype=torch.long) for _ in range(3)] + \
-                       [torch.zeros([batch_size], dtype=torch.long)]
+        sub_collated = [torch.zeros([batch_size, max_seq_length], dtype=torch.long) for _ in range(3)] + [torch.zeros([batch_size], dtype=torch.long)]
 
         for i, bert_input in enumerate(sub_batch):
             sub_collated[0][i] = torch.tensor(
@@ -55,24 +53,18 @@ def collate_batch(batch):
     return collated
 
 
-def write_predictions(output_dir, csv_path, predictions, suffix=None):
-    def deserialize_csv_record(row):
-        return row[0], eval[row[2]]
-
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    dataset_name = os.path.basename(csv_path).split('.')[0]
-    output_file = os.path.join(output_dir, f"{dataset_name}_predictions.txt")
-    records = _create_records_from_csv(csv_path, deserialize_csv_record)
-
-    with open(output_file, 'w') as f:
-        for predicted, (id, candidates) in zip(predictions, records):
-            print(f"{id} {candidates[predicted]}", file=f)
+def _truncate_seq_pair(tokens_a, tokens_b, max_length):
+    while True:
+        total_length = len(tokens_a) + len(tokens_b)
+        if total_length <= max_length:
+            break
+        if len(tokens_a) > len(tokens_b):
+            tokens_a.pop()
+        else:
+            tokens_b.pop()
 
 
 def _load_and_cache_dataset(csv_path, tokenizer, max_sequence_length, deserialze_fn):
-    # Load data features from cache or dataset file
     data_dir = os.path.dirname(csv_path)
     dataset_name = os.path.basename(csv_path).split('.')[0]
     cached_features_file = os.path.join(
@@ -90,8 +82,8 @@ def _load_and_cache_dataset(csv_path, tokenizer, max_sequence_length, deserialze
                                                  cls_token_segment_id=1,
                                                  pad_token_segment_id=0)
 
-    print("Saving features into cached file %s", cached_features_file)
-    torch.save(features, cached_features_file)
+    # print("Saving features into cached file %s", cached_features_file)
+    # torch.save(features, cached_features_file)
 
     class FeatureDataset(torch.utils.data.Dataset):
         def __init__(self, features_):
@@ -120,7 +112,7 @@ def _create_features_from_records(records, max_seq_length, tokenizer, cls_token_
                                   cls_token_segment_id=1, pad_token_segment_id=0,
                                   mask_padding_with_zero=True, disable_progress_bar=False):
     features = []
-    for record in tqdm(records, disable=disable_progress_bar):
+    for record in tqdm(records):
         tokens_a = tokenizer.tokenize(record.sentence)
 
         sequences = [(gloss, 1 if i in record.target_words else 0)
@@ -151,38 +143,18 @@ def _create_features_from_records(records, max_seq_length, tokenizer, cls_token_
             padding_length = max_seq_length - len(input_ids)
             if pad_on_left:
                 input_ids = ([pad_token] * padding_length) + input_ids
-                input_mask = ([0 if mask_padding_with_zero else 1]
-                              * padding_length) + input_mask
-                segment_ids = ([pad_token_segment_id] *
-                               padding_length) + segment_ids
+                input_mask = ([0 if mask_padding_with_zero else 1] * padding_length) + input_mask
+                segment_ids = ([pad_token_segment_id] *padding_length) + segment_ids
             else:
                 input_ids = input_ids + ([pad_token] * padding_length)
-                input_mask = input_mask + \
-                    ([0 if mask_padding_with_zero else 1] * padding_length)
-                segment_ids = segment_ids + \
-                    ([pad_token_segment_id] * padding_length)
-
-            assert len(input_ids) == max_seq_length
-            assert len(input_mask) == max_seq_length
-            assert len(segment_ids) == max_seq_length
-
+                input_mask = input_mask + ([0 if mask_padding_with_zero else 1] * padding_length)
+                segment_ids = segment_ids + ([pad_token_segment_id] * padding_length)
             pairs.append(
                 BertInput(input_ids=input_ids, input_mask=input_mask,
                           segment_ids=segment_ids, label_id=label)
             )
-
         features.append(pairs)
 
     return features
 
 
-def _truncate_seq_pair(tokens_a, tokens_b, max_length):
-    """Truncates a sequence pair in place to the maximum length."""
-    while True:
-        total_length = len(tokens_a) + len(tokens_b)
-        if total_length <= max_length:
-            break
-        if len(tokens_a) > len(tokens_b):
-            tokens_a.pop()
-        else:
-            tokens_b.pop()

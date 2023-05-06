@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 
 
 # get model and tokenizer 
-model, tokenizer = get_model_and_tokenizer()
+# model, tokenizer = get_model_and_tokenizer()
 BATCH_SIZE = 32
 
 
@@ -26,9 +26,6 @@ def _get_dataloader(_train_dataset, _collate_fn):
         collate_fn=_collate_fn
     )
 
-
-train_dataset = load_dataset("./SemCor/semcor_data.csv", tokenizer, 128)
-train_dataloader = _get_dataloader(train_dataset, collate_batch)
 
 
 def set_seed(seed):
@@ -55,7 +52,7 @@ def train(model, tokenizer, train_dataloader, num_epochss):
         epoch_iterator = tqdm(train_dataloader, desc="Iteration")
         for step, batch in enumerate(epoch_iterator):
             model.train()
-            loss = forward_gloss_selection(model, batch)[0]
+            loss = model.forward_gloss_selection(batch)[0]
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             tr_loss += loss.item()
@@ -74,8 +71,18 @@ def evaulate(model, tokenizer, eval_dataloader):
     nb_eval_steps = 0
     for batch in eval_dataloader:
         with torch.no_grad():
-            tmp_eval_loss = forward_gloss_selection(model, batch)[0]
+            tmp_eval_loss = model.forward_gloss_selection(batch)[0]
             eval_loss += tmp_eval_loss.mean().item()
         nb_eval_steps += 1
     eval_loss = eval_loss / nb_eval_steps
     return eval_loss
+
+
+def main():
+    set_seed(42)
+    model, tokenizer = get_model_and_tokenizer()
+    train_dataset = load_dataset("./SemCor/semcor_data.csv", tokenizer, 128)
+    train_dataloader = _get_dataloader(train_dataset, collate_batch)
+    global_step, tr_loss = train(model, tokenizer, train_dataloader, 3)
+    print("global_step = %s, average loss = %s" % (global_step, tr_loss))
+    model.save_pretrained("./model_save")
